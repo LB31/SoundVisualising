@@ -32,7 +32,8 @@ public class SoundVisual : MonoBehaviour {
         spectrum = new float[SAMPLE_SIZE];
         sampleRate = AudioSettings.outputSampleRate;
 
-        SpawnLine();
+        //SpawnLine();
+        SpawnCircle();
     }
 	private void SpawnLine()
     {
@@ -47,8 +48,33 @@ public class SoundVisual : MonoBehaviour {
         }
 
     }
-	
-	void Update () {
+    private void SpawnCircle()
+    {
+        visualScale = new float[amnVisual];
+        visualList = new Transform[amnVisual];
+        Vector3 center = Vector3.zero;
+        float radius = 10.0f;
+
+        for (int i = 0; i < amnVisual; i++)
+        {
+            float ang = i * 1.0f / amnVisual;
+            ang = ang * Mathf.PI * 2;
+
+            float x = center.x + Mathf.Cos(ang) * radius;
+            float y = center.y + Mathf.Sin(ang) * radius;
+
+            Vector3 pos = center + new Vector3(x, y, 0);
+
+            GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube) as GameObject;
+            go.transform.position = pos;
+            go.transform.rotation = Quaternion.LookRotation(Vector3.forward, pos);
+            visualList[i] = go.transform;
+        }
+
+    }
+
+
+    void Update () {
         AnalyzeSound();
         UpdateVisual();
     }
