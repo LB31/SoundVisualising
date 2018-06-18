@@ -12,8 +12,10 @@ public class SoundVisual : MonoBehaviour {
     // Frequency of the lowest note
     public float pitchValue;
 
+    public float maxVisualScale = 25.0f;
     public float visualModifier = 50.0f;
     public float smoothSpeed = 10.0f;
+    public float keepPercentage = 0.5f;
     
     private AudioSource source;
     private float[] samples;
@@ -54,7 +56,7 @@ public class SoundVisual : MonoBehaviour {
     {
         int visualIndex = 0;
         int spectrumIndex = 0;
-        int averageSize = SAMPLE_SIZE / amnVisual;
+        int averageSize = (int)((SAMPLE_SIZE * keepPercentage) / amnVisual);
 
         while (visualIndex < amnVisual)
         {
@@ -71,7 +73,17 @@ public class SoundVisual : MonoBehaviour {
             if(visualScale[visualIndex] < scaleY)
             {
                 visualScale[visualIndex] = scaleY;
+
+                if(visualScale[visualIndex] > 10)
+                Debug.Log(visualScale[visualIndex]);
             }
+
+            if (visualScale[visualIndex] > maxVisualScale)
+            {
+                visualScale[visualIndex] = maxVisualScale;
+                
+            }
+
 
             visualList[visualIndex].localScale = Vector3.one + Vector3.up * visualScale[visualIndex];
             visualIndex++; ;

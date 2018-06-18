@@ -362,4 +362,8 @@ MonoBehaviour:
   rmsValue: 0
   dbValue: 0
   pitchValue: 0
-  source: {fileID: 0}
+  maxVisualScale: 15
+  visualModifier: 150
+  smoothSpeed: 10
+  keepPercentage: 0.3
+  visualList: []
