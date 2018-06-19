@@ -1,9 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 public class SoundVisual : MonoBehaviour {
     private const int SAMPLE_SIZE = 1024;
+
+    public string path;
 
     // Following 3 fields are updated in each frame
     // Average audio power as voltage
@@ -11,6 +14,11 @@ public class SoundVisual : MonoBehaviour {
     public float dbValue;
     // Frequency of the lowest note
     public float pitchValue;
+
+    public float backgroundIntensity;
+    public Material backgroundMaterial;
+    public Color minimumColor;
+    public Color maximumColor;
 
     public float maxVisualScale = 25.0f;
     public float visualModifier = 50.0f;
@@ -22,17 +30,35 @@ public class SoundVisual : MonoBehaviour {
     private float[] spectrum;
     private float sampleRate;
 
-    public Transform[] visualList;
+    private Transform[] visualList;
     private float[] visualScale;
-    private int amnVisual = 64;
+    public int amnVisual = 64;
 
 	void Start () {
-        source = GetComponent<AudioSource>();
+        path = EditorUtility.OpenFilePanel("Select song", "", "mp3");
+        ImportAudio();
+        
         samples = new float[SAMPLE_SIZE];
         spectrum = new float[SAMPLE_SIZE];
         sampleRate = AudioSettings.outputSampleRate;
 
         //SpawnLine();
+        
+    }
+
+    private IEnumerator ImportAudio()
+    {
+        
+        string url = "file:///" + path;
+        WWW audio = new WWW(url);
+
+        while (audio.progress < 0.1)
+        {
+            yield return new WaitForSeconds(0.1f);
+        }
+
+        GetComponent<AudioSource>().clip = audio.GetAudioClip();
+        source = GetComponent<AudioSource>();
         SpawnCircle();
     }
 	private void SpawnLine()
@@ -74,9 +100,11 @@ public class SoundVisual : MonoBehaviour {
     }
 
 
+
     void Update () {
         AnalyzeSound();
         UpdateVisual();
+        UpdateBackground();
     }
     private void UpdateVisual()
     {
@@ -135,5 +163,13 @@ public class SoundVisual : MonoBehaviour {
 
         // Get sound spectrum
         source.GetSpectrumData(spectrum, 0, FFTWindow.BlackmanHarris);
+    }
+    private void UpdateBackground(){
+        backgroundIntensity -= Time.deltaTime * smoothSpeed;
+        int capDb = 40;
+        if (backgroundIntensity < dbValue / capDb)
+            backgroundIntensity = dbValue / capDb;
+
+        backgroundMaterial.color = Color.Lerp(minimumColor, maximumColor, - backgroundIntensity);
     }
 }
