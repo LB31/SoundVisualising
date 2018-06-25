@@ -44,19 +44,24 @@ public class SoundVisual : MonoBehaviour {
 
         StartCoroutine(ImportAudio());
 
-       
 
+    }
 
-
-        //SpawnLine();
-
-
+    void Update()
+    {
+        if (audioReady)
+        {
+            AnalyzeSound();
+            UpdateVisual();
+            UpdateBackground();
+        }
     }
 
     private IEnumerator ImportAudio()
     {
         path = EditorUtility.OpenFilePanel("Select song", "", "mp3");
-
+        if (path == "")
+            UnityEditor.EditorApplication.isPlaying = false;
         string url = "file:///" + path;
         WWW audio = new WWW(url);
 
@@ -67,13 +72,14 @@ public class SoundVisual : MonoBehaviour {
             yield return 0;
         }
 
-
+        
         testAudio = NAudioPlayer.FromMp3Data(audio.bytes);
         source.clip = testAudio;
         source.Play();
         sampleRate = AudioSettings.outputSampleRate;
-        
+
         audioReady = true;
+
     }
 	private void SpawnLine()
     {
@@ -115,13 +121,7 @@ public class SoundVisual : MonoBehaviour {
 
 
 
-    void Update () {
-        if (audioReady) { 
-        AnalyzeSound();
-        UpdateVisual();
-        UpdateBackground();
-        }
-    }
+
     private void UpdateVisual()
     {
         int visualIndex = 0;
