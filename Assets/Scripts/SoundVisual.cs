@@ -7,6 +7,8 @@ public class SoundVisual : MonoBehaviour {
     private const int SAMPLE_SIZE = 1024;
 
     public string path;
+    public AudioClip testAudio;
+    public bool audioReady;
 
     // Following 3 fields are updated in each frame
     // Average audio power as voltage
@@ -35,31 +37,43 @@ public class SoundVisual : MonoBehaviour {
     public int amnVisual = 64;
 
 	void Start () {
-        path = EditorUtility.OpenFilePanel("Select song", "", "mp3");
-        ImportAudio();
-        
+        SpawnCircle();
         samples = new float[SAMPLE_SIZE];
         spectrum = new float[SAMPLE_SIZE];
-        sampleRate = AudioSettings.outputSampleRate;
+        source = GetComponent<AudioSource>();
+
+        StartCoroutine(ImportAudio());
+
+       
+
+
 
         //SpawnLine();
-        
+
+
     }
 
     private IEnumerator ImportAudio()
     {
-        
+        path = EditorUtility.OpenFilePanel("Select song", "", "mp3");
+
         string url = "file:///" + path;
         WWW audio = new WWW(url);
 
-        while (audio.progress < 0.1)
+  
+
+        while (!audio.isDone)
         {
-            yield return new WaitForSeconds(0.1f);
+            yield return 0;
         }
 
-        GetComponent<AudioSource>().clip = audio.GetAudioClip();
-        source = GetComponent<AudioSource>();
-        SpawnCircle();
+
+        testAudio = NAudioPlayer.FromMp3Data(audio.bytes);
+        source.clip = testAudio;
+        source.Play();
+        sampleRate = AudioSettings.outputSampleRate;
+        
+        audioReady = true;
     }
 	private void SpawnLine()
     {
@@ -102,9 +116,11 @@ public class SoundVisual : MonoBehaviour {
 
 
     void Update () {
+        if (audioReady) { 
         AnalyzeSound();
         UpdateVisual();
         UpdateBackground();
+        }
     }
     private void UpdateVisual()
     {
@@ -128,8 +144,7 @@ public class SoundVisual : MonoBehaviour {
             {
                 visualScale[visualIndex] = scaleY;
 
-                if(visualScale[visualIndex] > 10)
-                Debug.Log(visualScale[visualIndex]);
+               
             }
 
             if (visualScale[visualIndex] > maxVisualScale)
