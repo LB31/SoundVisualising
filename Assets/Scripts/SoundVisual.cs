@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using SFB;
+using System;
 
 public class SoundVisual : MonoBehaviour {
     private const int SAMPLE_SIZE = 1024;
 
+    public string[] paths;
     public string path;
     public AudioClip testAudio;
     public bool audioReady;
@@ -59,9 +62,17 @@ public class SoundVisual : MonoBehaviour {
 
     private IEnumerator ImportAudio()
     {
-        path = EditorUtility.OpenFilePanel("Select song", "", "mp3");
-        if (path == "")
-            UnityEditor.EditorApplication.isPlaying = false;
+        //path = EditorUtility.OpenFilePanel("Select song", "", "mp3");
+        paths = StandaloneFileBrowser.OpenFilePanel("Select Song", "", "mp3", false);
+        try
+        {
+            path = paths[0];
+        }
+        catch (Exception ex)
+        {
+            // If no file was selected stop the application
+            Quit();
+        }
         string url = "file:///" + path;
         WWW audio = new WWW(url);
 
@@ -186,5 +197,17 @@ public class SoundVisual : MonoBehaviour {
             backgroundIntensity = dbValue / capDb;
 
         backgroundMaterial.color = Color.Lerp(minimumColor, maximumColor, - backgroundIntensity);
+    }
+
+
+    public static void Quit()
+    {
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#elif UNITY_WEBPLAYER
+         Application.OpenURL(webplayerQuitURL);
+#else
+         Application.Quit();
+#endif
     }
 }
